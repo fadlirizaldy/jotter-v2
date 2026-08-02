@@ -1,15 +1,50 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Eye, EyeOff } from "lucide-react";
+import { BookOpen } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+import { postLogin } from "../utils/api";
+import InputText from "../components/InputText";
+import {
+  email_validation,
+  password_validation,
+} from "../utils/input-validation";
+
+type LoginForm = {
+  email: string;
+  password: string;
+};
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
 
-  const onLogin = () => {
-    // Handle login logic here
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<LoginForm>();
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const onSubmit = async (e: LoginForm) => {
+    setIsLoading(true);
+    const payload = {
+      email: e.email,
+      password: e.password,
+    };
+
+    const response = await postLogin(payload);
+    if (response.error) {
+      setError("password", { type: "apiResponse", message: response.message });
+      toast.error(response.message, { duration: 2500, position: "top-right" });
+    } else {
+      toast.success("Success login", { duration: 2500, position: "top-right" });
+      localStorage.setItem("token", response.data.accessToken);
+      navigate("/");
+    }
+    setIsLoading(false);
   };
 
   const onGoRegister = () => {
@@ -74,45 +109,30 @@ const Login = () => {
             Sign in to your notes
           </p>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1.5 uppercase tracking-wider">
-                Email
-              </label>
-              <input
-                className="w-full bg-input-background border border-border rounded-lg px-4 py-3 text-foreground text-sm focus:outline-none focus:border-primary transition-colors"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1.5 uppercase tracking-wider">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  className="w-full bg-input-background border border-border rounded-lg px-4 py-3 text-foreground text-sm focus:outline-none focus:border-primary transition-colors pr-10"
-                  type={showPw ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setShowPw(!showPw)}
-                >
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={onLogin}
-            className="mt-6 w-full bg-primary text-primary-foreground font-semibold py-3 rounded-lg hover:bg-amber-400 transition-colors text-sm"
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+            autoComplete="off"
+            className="flex flex-col gap-2"
           >
-            Sign in
-          </button>
+            <InputText
+              errors={errors.email}
+              register={register}
+              {...email_validation}
+            />
+            <InputText
+              errors={errors.password}
+              register={register}
+              {...password_validation}
+            />
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="mt-6 w-full bg-primary cursor-pointer text-primary-foreground font-semibold py-3 rounded-lg hover:bg-amber-400 transition-colors text-sm"
+            >
+              {isLoading ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             No account yet?{" "}

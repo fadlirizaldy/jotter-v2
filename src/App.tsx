@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
 
 import HomePage from "./pages/Home";
 import NotFoundPage from "./pages/404";
@@ -40,7 +41,7 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
-      {/* <ToastContainer /> */}
+      <Toaster />
     </>
   );
 }

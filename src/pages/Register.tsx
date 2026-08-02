@@ -1,16 +1,55 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Eye, EyeOff } from "lucide-react";
+import { BookOpen } from "lucide-react";
+import { toast } from "sonner";
+
+import {
+  email_validation,
+  name_validation,
+  password_validation,
+} from "../utils/input-validation";
+import InputText from "../components/InputText";
+import { postRegister } from "../utils/api";
+
+type RegisterForm = {
+  name: string;
+  email: string;
+  password: string;
+};
 
 const Register = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
 
-  const onRegister = () => {
-    // Handle registration logic here
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<RegisterForm>();
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const onSubmit = async (e: RegisterForm) => {
+    setIsLoading(true);
+    const payload = {
+      name: e.name,
+      email: e.email,
+      password: e.password,
+    };
+
+    const response = await postRegister(payload);
+    if (response.error) {
+      setError("password", { type: "apiResponse", message: response.message });
+      toast.error(response.message, { duration: 2500, position: "top-right" });
+    } else {
+      toast.success("Success create user, please login to continue", {
+        duration: 2500,
+        position: "top-right",
+      });
+      navigate("/login");
+    }
+    setIsLoading(false);
   };
 
   const onGoLogin = () => {
@@ -40,57 +79,35 @@ const Register = () => {
           Start capturing your thoughts
         </p>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5 uppercase tracking-wider">
-              Full name
-            </label>
-            <input
-              className="w-full bg-input-background border border-border rounded-lg px-4 py-3 text-foreground text-sm focus:outline-none focus:border-primary transition-colors"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Alex Rivera"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5 uppercase tracking-wider">
-              Email
-            </label>
-            <input
-              className="w-full bg-input-background border border-border rounded-lg px-4 py-3 text-foreground text-sm focus:outline-none focus:border-primary transition-colors"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5 uppercase tracking-wider">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                className="w-full bg-input-background border border-border rounded-lg px-4 py-3 text-foreground text-sm focus:outline-none focus:border-primary transition-colors pr-10"
-                type={showPw ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Min. 8 characters"
-              />
-              <button
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => setShowPw(!showPw)}
-              >
-                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={onRegister}
-          className="mt-6 w-full bg-primary text-primary-foreground font-semibold py-3 rounded-lg hover:bg-amber-400 transition-colors text-sm"
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          autoComplete="off"
+          className="flex flex-col gap-2"
         >
-          Create account
-        </button>
+          <InputText
+            errors={errors.name}
+            register={register}
+            {...name_validation}
+          />
+          <InputText
+            errors={errors.email}
+            register={register}
+            {...email_validation}
+          />
+          <InputText
+            errors={errors.password}
+            register={register}
+            {...password_validation}
+          />
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="mt-6 w-full cursor-pointer bg-primary text-primary-foreground font-semibold py-3 rounded-lg hover:bg-amber-400 transition-colors text-sm"
+          >
+            {isLoading ? "Creating account..." : "Create account"}
+          </button>
+        </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Already have an account?{" "}
