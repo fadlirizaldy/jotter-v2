@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import "react-toastify/dist/ReactToastify.css";
 
 import HomePage from "./pages/Home";
 import NotFoundPage from "./pages/404";
