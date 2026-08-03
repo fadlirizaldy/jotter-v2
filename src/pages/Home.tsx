@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import Layout from "../components/Layout";
 import Tabs from "../components/Tabs";
 import NoteCard from "../components/NoteCard";
 import { getActiveNotes, getArchivedNotes } from "../utils/api";
-import { toast } from "sonner";
 import type { INote } from "../utils/type";
 
 const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<INote[]>([]);
+  const navigate = useNavigate();
 
   const currentTab = searchParams.get("tab") || "active";
 
@@ -47,6 +48,10 @@ const Home = () => {
       value: "archived",
     },
   ];
+
+  const onOpenNote = (noteId: string) => {
+    navigate(`/note/${noteId}`);
+  };
   return (
     <Layout>
       <Tabs tabs={tabs} activeTab={currentTab} onChange={handleTabChange} />
@@ -57,7 +62,7 @@ const Home = () => {
             <NoteCard
               key={note.id}
               note={note}
-              onOpen={() => {}}
+              onOpen={() => onOpenNote(note.id)}
               onArchive={() => {}}
               onUnarchive={() => {}}
               onDelete={() => {}}
