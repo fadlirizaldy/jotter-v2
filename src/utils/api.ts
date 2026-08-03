@@ -1,3 +1,5 @@
+import type { ApiResponse, INote } from "./type";
+
 const BASE_URL = "https://notes-api.dicoding.dev/v1";
 
 function getAccessToken() {
@@ -97,7 +99,7 @@ async function addNote({ title, body }: { title: string; body: string }) {
   return { error: false, data: responseJson.data };
 }
 
-async function getActiveNotes() {
+async function getActiveNotes(): Promise<ApiResponse<INote[]>> {
   const response = await fetchWithToken(`${BASE_URL}/notes`);
   const responseJson = await response.json();
 
@@ -106,13 +108,18 @@ async function getActiveNotes() {
       error: true,
       data: null,
       status: response.status,
+      message: responseJson.message,
     };
   }
 
-  return { error: false, data: responseJson.data, status: response.status };
+  return {
+    error: false,
+    data: responseJson.data,
+    status: response.status,
+  };
 }
 
-async function getArchivedNotes() {
+async function getArchivedNotes(): Promise<ApiResponse<INote[]>> {
   const response = await fetchWithToken(`${BASE_URL}/notes/archived`);
   const responseJson = await response.json();
 
@@ -120,10 +127,16 @@ async function getArchivedNotes() {
     return {
       error: true,
       data: null,
+      status: response.status,
+      message: responseJson.message,
     };
   }
 
-  return { error: false, data: responseJson.data };
+  return {
+    error: false,
+    data: responseJson.data,
+    status: response.status,
+  };
 }
 
 async function getNote(id: string) {
