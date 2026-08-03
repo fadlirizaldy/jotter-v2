@@ -4,7 +4,13 @@ import { toast } from "sonner";
 import Layout from "../components/Layout";
 import Tabs from "../components/Tabs";
 import NoteCard from "../components/NoteCard";
-import { getActiveNotes, getArchivedNotes } from "../utils/api";
+import {
+  archiveNote,
+  deleteNote,
+  getActiveNotes,
+  getArchivedNotes,
+  unarchiveNote,
+} from "../utils/api";
 import type { INote } from "../utils/type";
 import ModalCreate from "../components/ModalCreate";
 
@@ -55,6 +61,52 @@ const Home = () => {
   const onOpenNote = (noteId: string) => {
     navigate(`/note/${noteId}`);
   };
+
+  const onArchiveNote = async (noteId: string) => {
+    if (currentTab === "active") {
+      const responseData = await archiveNote(noteId);
+      if (responseData?.error) {
+        toast.error("There's an error", {
+          duration: 2500,
+          position: "top-right",
+        });
+        return;
+      }
+      toast.success("Note archived successfully", {
+        duration: 2500,
+        position: "top-right",
+      });
+      setData((prevData) => prevData.filter((note) => note.id !== noteId));
+    } else {
+      const responseData = await unarchiveNote(noteId);
+      if (responseData?.error) {
+        toast.error("There's an error", {
+          duration: 2500,
+          position: "top-right",
+        });
+        return;
+      }
+      toast.success("Note unarchived successfully", {
+        duration: 2500,
+        position: "top-right",
+      });
+      setData((prevData) => prevData.filter((note) => note.id !== noteId));
+    }
+  };
+
+  const onDeleteNote = async (noteId: string) => {
+    const responseDelete = await deleteNote(noteId);
+    if (responseDelete.error) {
+      toast.error("Failed to remove", {
+        duration: 1000,
+        position: "top-right",
+      });
+      return;
+    }
+    toast.success("Note removed!", { duration: 1000, position: "top-right" });
+    setData((prevData) => prevData.filter((note) => note.id !== noteId));
+  };
+
   return (
     <Layout onCreate={() => setShowCreate(true)}>
       <Tabs tabs={tabs} activeTab={currentTab} onChange={handleTabChange} />
@@ -66,9 +118,9 @@ const Home = () => {
               key={note.id}
               note={note}
               onOpen={() => onOpenNote(note.id)}
-              onArchive={() => {}}
-              onUnarchive={() => {}}
-              onDelete={() => {}}
+              onArchive={() => onArchiveNote(note.id)}
+              onUnarchive={() => onArchiveNote(note.id)}
+              onDelete={() => onDeleteNote(note.id)}
             />
           ))}
         </div>

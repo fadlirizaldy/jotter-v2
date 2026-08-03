@@ -3,7 +3,8 @@ import type { INote } from "../utils/type";
 import { useNavigate, useParams } from "react-router-dom";
 import { showFormattedDate } from "../utils";
 import { Archive, ArrowLeft, RotateCcw, Trash2 } from "lucide-react";
-import { getNote } from "../utils/api";
+import { archiveNote, deleteNote, getNote, unarchiveNote } from "../utils/api";
+import { toast } from "sonner";
 
 const Detail = () => {
   const navigate = useNavigate();
@@ -11,14 +12,25 @@ const Detail = () => {
   const [data, setData] = useState<INote | null>(null);
   const [isLoading, setLoading] = useState(false);
 
+  const fetchNote = async (noteId: string) => {
+    setLoading(true);
+    const response = await getNote(noteId);
+    if (response.error) {
+      toast.error("Failed to fetch note", {
+        duration: 1000,
+        position: "top-right",
+      });
+      setData(null);
+    } else {
+      setData(response.data);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (id) {
       setLoading(true);
-      getNote(id)
-        .then((res) => {
-          setData(res.data);
-        })
-        .finally(() => setLoading(false));
+      fetchNote(id);
     }
   }, [id]);
 
@@ -26,17 +38,51 @@ const Detail = () => {
     navigate(-1);
   };
 
-  const onArchive = () => {
-    // Implement archive functionality
+  const onArchive = async () => {
+    const responseData = await archiveNote(id || "");
+    if (responseData?.error) {
+      toast.error("There's an error", {
+        duration: 2500,
+        position: "top-right",
+      });
+      return;
+    }
+    toast.success("Note archived successfully", {
+      duration: 2500,
+      position: "top-right",
+    });
+    setData((prevData) => (prevData ? { ...prevData, archived: true } : null));
   };
 
-  const onUnarchive = () => {
-    // Implement unarchive functionality
+  const onUnarchive = async () => {
+    const responseData = await unarchiveNote(id || "");
+    if (responseData?.error) {
+      toast.error("There's an error", {
+        duration: 2500,
+        position: "top-right",
+      });
+      return;
+    }
+    toast.success("Note unarchived successfully", {
+      duration: 2500,
+      position: "top-right",
+    });
+    setData((prevData) => (prevData ? { ...prevData, archived: false } : null));
   };
 
-  const onDelete = () => {
-    // Implement delete functionality
+  const onDelete = async () => {
+    const responseDelete = await deleteNote(id || "");
+    if (responseDelete.error) {
+      toast.error("Failed to remove", {
+        duration: 1000,
+        position: "top-right",
+      });
+      return;
+    }
+    toast.success("Note removed!", { duration: 1000, position: "top-right" });
+    navigate(data?.archived ? "/?tab=archived" : "/?tab=active");
   };
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       {isLoading ? (
