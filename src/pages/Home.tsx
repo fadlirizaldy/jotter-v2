@@ -6,10 +6,13 @@ import Tabs from "../components/Tabs";
 import NoteCard from "../components/NoteCard";
 import { getActiveNotes, getArchivedNotes } from "../utils/api";
 import type { INote } from "../utils/type";
+import ModalCreate from "../components/ModalCreate";
 
 const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<INote[]>([]);
+  const [showCreate, setShowCreate] = useState(false);
+
   const navigate = useNavigate();
 
   const currentTab = searchParams.get("tab") || "active";
@@ -53,7 +56,7 @@ const Home = () => {
     navigate(`/note/${noteId}`);
   };
   return (
-    <Layout>
+    <Layout onCreate={() => setShowCreate(true)}>
       <Tabs tabs={tabs} activeTab={currentTab} onChange={handleTabChange} />
 
       {data?.length > 0 ? (
@@ -71,6 +74,13 @@ const Home = () => {
         </div>
       ) : (
         <p>No notes available.</p>
+      )}
+
+      {showCreate && (
+        <ModalCreate
+          onClose={() => setShowCreate(false)}
+          onRefetch={() => fetchNotes(currentTab)}
+        />
       )}
     </Layout>
   );

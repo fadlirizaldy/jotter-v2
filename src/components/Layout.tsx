@@ -8,8 +8,11 @@ interface MainLayoutProps {
   isDetail?: boolean;
 }
 
-const MainLayout = ({ children, isDetail }: MainLayoutProps) => {
-  const [showCreate, setShowCreate] = useState(false);
+const MainLayout = ({
+  children,
+  isDetail,
+  onCreate,
+}: MainLayoutProps & { onCreate: () => void }) => {
   const [query, setQuery] = useState("");
 
   const navigate = useNavigate();
@@ -60,7 +63,7 @@ const MainLayout = ({ children, isDetail }: MainLayoutProps) => {
           <div className="ml-auto flex items-center gap-2">
             {!isDetail && (
               <button
-                onClick={() => setShowCreate(true)}
+                onClick={onCreate}
                 className="flex items-center gap-1.5 text-sm bg-primary text-primary-foreground px-3 py-2 rounded-lg hover:bg-amber-400 transition-colors font-semibold"
               >
                 <Plus size={15} />
