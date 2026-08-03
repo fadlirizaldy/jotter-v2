@@ -1,5 +1,4 @@
 import { Archive } from "lucide-react";
-import { useState } from "react";
 
 const Tabs = ({
   tabs,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import Layout from "../components/Layout";
@@ -18,12 +18,14 @@ const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<INote[]>([]);
   const [showCreate, setShowCreate] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const navigate = useNavigate();
 
   const currentTab = searchParams.get("tab") || "active";
 
   useEffect(() => {
+    setSearchQuery("");
     fetchNotes(currentTab);
   }, [currentTab]);
 
@@ -57,6 +59,19 @@ const Home = () => {
       value: "archived",
     },
   ];
+
+  const filteredNotes = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return data;
+    }
+
+    return data.filter((note) => {
+      const noteText = `${note.title} ${note.body}`.toLowerCase();
+      return noteText.includes(normalizedQuery);
+    });
+  }, [data, searchQuery]);
 
   const onOpenNote = (noteId: string) => {
     navigate(`/note/${noteId}`);
@@ -108,12 +123,16 @@ const Home = () => {
   };
 
   return (
-    <Layout onCreate={() => setShowCreate(true)}>
+    <Layout
+      onCreate={() => setShowCreate(true)}
+      searchValue={searchQuery}
+      onSearchChange={setSearchQuery}
+    >
       <Tabs tabs={tabs} activeTab={currentTab} onChange={handleTabChange} />
 
-      {data?.length > 0 ? (
+      {filteredNotes.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-20">
-          {data.map((note) => (
+          {filteredNotes.map((note) => (
             <NoteCard
               key={note.id}
               note={note}
@@ -125,7 +144,7 @@ const Home = () => {
           ))}
         </div>
       ) : (
-        <p>No notes available.</p>
+        <p>{searchQuery ? "No notes match your search." : "No notes available."}</p>
       )}
 
       {showCreate && (

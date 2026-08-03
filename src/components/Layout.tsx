@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, LogOut, Plus, Search } from "lucide-react";
@@ -6,15 +6,17 @@ import { BookOpen, LogOut, Plus, Search } from "lucide-react";
 interface MainLayoutProps {
   children: React.ReactNode;
   isDetail?: boolean;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 const MainLayout = ({
   children,
   isDetail,
   onCreate,
-}: MainLayoutProps & { onCreate: () => void }) => {
-  const [query, setQuery] = useState("");
-
+  searchValue = "",
+  onSearchChange,
+}: MainLayoutProps & { onCreate?: () => void }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -32,7 +34,7 @@ const MainLayout = ({
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
           <button
-            // onClick={() => { setView("notes"); setTab("active"); }}
+            onClick={() => navigate("/")}
             className="flex items-center gap-2 shrink-0"
           >
             <BookOpen size={20} className="text-primary" />
@@ -54,8 +56,8 @@ const MainLayout = ({
               <input
                 className="w-full bg-input-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                 placeholder="Search notes…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                value={searchValue}
+                onChange={(e) => onSearchChange?.(e.target.value)}
               />
             </div>
           )}
