@@ -33,13 +33,21 @@ const Home = () => {
     if (status === "active") {
       const res = await getActiveNotes();
       if (res.error) {
-        toast.error(res.message, { duration: 2500, position: "top-right" });
+        toast.error(res.message, { duration: 2000, position: "top-right" });
+        if (res.status >= 401 && res.status < 403) {
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
       }
       setData(res.data || []);
     } else if (status === "archived") {
       const res = await getArchivedNotes();
       if (res.error) {
-        toast.error(res.message, { duration: 2500, position: "top-right" });
+        toast.error(res.message, { duration: 2000, position: "top-right" });
+        if (res.status >= 401 && res.status < 403) {
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
       }
       setData(res.data || []);
     }
@@ -144,7 +152,9 @@ const Home = () => {
           ))}
         </div>
       ) : (
-        <p>{searchQuery ? "No notes match your search." : "No notes available."}</p>
+        <p>
+          {searchQuery ? "No notes match your search." : "No notes available."}
+        </p>
       )}
 
       {showCreate && (
